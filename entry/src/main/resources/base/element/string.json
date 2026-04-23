@@ -2,15 +2,19 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "module description"
+      "value": "相亲相爱桌面 - 老人桌面应用"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "description"
+      "value": "相亲相爱桌面"
     },
     {
       "name": "EntryAbility_label",
-      "value": "label"
+      "value": "相亲相爱桌面"
+    },
+    {
+      "name": "app_name",
+      "value": "相亲相爱桌面"
     }
   ]
 }

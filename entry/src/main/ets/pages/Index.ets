@@ -25,6 +25,7 @@ export struct Index {
   @State showContactDialog: boolean = false;
   @State selectedContact: Contact | null = null;
   @State showSettingsDialog: boolean = false;
+  @State showExitConfirm: boolean = false;
   @State fontSizeConfig: Record<string, number> = { "fontSize": 22, "iconSize": 80 };
 
   private contactActions: ContactAction[] = [
@@ -93,7 +94,15 @@ export struct Index {
   }
 
   // 退出桌面
-  async exitDesktop(): Promise<void> {
+  // 退出桌面（弹出确认）
+  exitDesktop(): void {
+    this.showSettingsDialog = false;
+    this.showExitConfirm = true;
+  }
+
+  // 确认退出
+  confirmExit(): void {
+    this.showExitConfirm = false;
     try {
       const context = getContext(this) as common.UIAbilityContext;
       context.terminateSelf();
@@ -154,6 +163,11 @@ export struct Index {
       // 设置弹窗
       if (this.showSettingsDialog) {
         this.SettingsDialog()
+      }
+
+      // 退出确认弹窗
+      if (this.showExitConfirm) {
+        this.ExitConfirmDialog()
       }
     }
     .width('100%')
@@ -462,5 +476,64 @@ export struct Index {
       this.showSettingsDialog = false;
       router.pushUrl({ url: `pages/${pageName}` });
     })
+  }
+
+  @Builder
+  ExitConfirmDialog() {
+    Column() {
+      // 遮罩
+      Column()
+        .width('100%')
+        .height('100%')
+        .backgroundColor('rgba(0, 0, 0, 0.5)')
+        .onClick(() => {
+          this.showExitConfirm = false;
+        })
+
+      // 确认卡片
+      Column() {
+        Text('退出桌面')
+          .fontSize(18)
+          .fontWeight(FontWeight.Medium)
+          .fontColor('#1A1A1A')
+
+        Text('退出后将从桌面返回系统界面')
+          .fontSize(14)
+          .fontColor('#909399')
+          .margin({ top: 8 })
+
+        Row({ space: 16 }) {
+          Button('取消')
+            .width('46%')
+            .height(44)
+            .fontSize(15)
+            .fontColor('#606266')
+            .backgroundColor('#F2F4F7')
+            .borderRadius(22)
+            .onClick(() => {
+              this.showExitConfirm = false;
+            })
+
+          Button('确认退出')
+            .width('46%')
+            .height(44)
+            .fontSize(15)
+            .fontColor('#FFFFFF')
+            .backgroundColor('#F56C6C')
+            .borderRadius(22)
+            .onClick(() => {
+              this.confirmExit();
+            })
+        }
+        .margin({ top: 24 })
+      }
+      .width('75%')
+      .backgroundColor('#FFFFFF')
+      .borderRadius(16)
+      .padding(24)
+    }
+    .width('100%')
+    .height('100%')
+    .position({ x: 0, y: 0 } as Position)
   }
 }

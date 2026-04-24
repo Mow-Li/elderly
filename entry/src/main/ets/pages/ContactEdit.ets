@@ -2,9 +2,8 @@
  * 联系人编辑页面 - 添加/编辑联系人
  */
 import { common } from '@kit.AbilityKit';
-import { router } from '@kit.ArkUI';
-import { promptAction } from '@kit.ArkUI';
-import { photoViewPicker } from '@kit.MediaLibraryKit';
+import { router, promptAction } from '@kit.ArkUI';
+import { photoAccessHelper } from '@kit.MediaLibraryKit';
 import { Contact } from '../models/Contact';
 import { StorageUtil } from '../utils/StorageUtil';
 
@@ -41,13 +40,12 @@ export struct ContactEdit {
       this.contact.id = Date.now().toString();
     }
   }
-
   // 选择照片
   async onSelectPhoto(): Promise<void> {
     try {
-      const photoPicker = new photoViewPicker.PhotoViewPicker();
+      const photoPicker = new photoAccessHelper.PhotoViewPicker();
       const result = await photoPicker.select({
-        MIMEType: photoViewPicker.PhotoViewMIMETypes.IMAGE_TYPE,
+        MIMEType: photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE,
         maxSelectNumber: 1
       });
 
@@ -156,7 +154,7 @@ export struct ContactEdit {
       .backgroundColor('#FFFFFF')
       .border({ width: { bottom: 1 }, color: { bottom: '#E0E0E0' } })
 
-      ScrollView() {
+      Scroll() {
         Column() {
           // 头像选择
           Column() {

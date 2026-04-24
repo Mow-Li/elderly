@@ -219,11 +219,9 @@ export struct Index {
       .padding({ left: 24, right: 24 })
     }
   }
-
   @Builder
   buildAppGrid() {
-    const enabledApps = this.appShortcuts.filter(a => a.enabled);
-    if (enabledApps.length === 0) {
+    if (this.appShortcuts.filter(a => a.enabled).length === 0) {
       Blank()
     } else {
       Column() {
@@ -234,7 +232,7 @@ export struct Index {
           .padding({ left: 24, right: 24, top: 16, bottom: 10 })
 
         Grid() {
-          ForEach(enabledApps, (app: AppShortcut) => {
+          ForEach(this.appShortcuts.filter(a => a.enabled), (app: AppShortcut) => {
             GridItem() {
               Column() {
                 Column() {

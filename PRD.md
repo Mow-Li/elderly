@@ -192,7 +192,7 @@
   name: string;         // 姓名
   photoUri: string;     // 照片路径
   phone: string;        // 电话号码
-  wechatId?: string;    // 微信ID（可选）
+  wechatId: string;    // 微信ID（可选）
   position: number;    // 桌面位置 0-5
 }
 ```

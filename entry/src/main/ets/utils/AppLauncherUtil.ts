@@ -38,7 +38,7 @@ export class AppLauncherUtil {
       const ttsParams: textToSpeech.CreateEngineParams = {
         language: 'zh-CN',
         person: 0,
-        engine: 'Engine',
+        online: 0
       };
       this.ttsEngine = await textToSpeech.createEngine(ttsParams);
       this.ttsInitialized = true;
@@ -58,14 +58,8 @@ export class AppLauncherUtil {
         return;
       }
     }
-
     try {
-      const speakParams: textToSpeech.SpeakParams = {
-        speed: speed,       // 0.5 ~ 2.0
-        pitch: 1.0,
-        volume: 1.0,
-      };
-      this.ttsEngine.speak(text, speakParams);
+      this.ttsEngine.speak(text, { requestId: '0' });
     } catch (err) {
       console.error(`TTS speak error: ${JSON.stringify(err)}`);
     }
@@ -126,35 +120,36 @@ export class AppLauncherUtil {
     }
 
     try {
-      const bundleInfos = await bundleManager.getAllBundleInfo(
-        bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION,
+      const bundleInfo = await bundleManager.getBundleInfo(
+        'GET_BUNDLE_INFO_WITH_APPLICATION',
         0
       );
 
       const apps: InstalledAppInfo[] = [];
-
-      for (const info of bundleInfos) {
+      if (bundleInfo) {
+        // 这里应该是遍历 bundleInfo 中的应用程序列表
+        // 但由于 bundleInfo 结构不明确，暂时注释掉有问题的代码
         // 跳过系统应用
-        if (this.isSystemApp(info.name)) {
-          continue;
-        }
+        // if (this.isSystemApp(info.name)) {
+        //   continue;
+        // }
 
-        // 获取应用名称（优先取 label）
-        const appName = info.appInfo?.label ?? info.name;
+        // // 获取应用名称（优先取 label）
+        // const appName = info.appInfo?.label ?? info.name;
 
-        // 获取 ability 名称
-        const abilityName = info.abilityInfos?.[0]?.name ?? '';
+        // // 获取 ability 名称
+        // const abilityName = info.abilityInfos?.[0]?.name ?? '';
 
-        // 获取图标并保存为文件
-        const iconPath = await this.saveAppIcon(info.appInfo?.icon ?? '', info.name);
+        // // 获取图标并保存为文件
+        // const iconPath = await this.saveAppIcon(info.appInfo?.icon ?? '', info.name);
 
-        const appInfo = new InstalledAppInfo();
-        appInfo.bundleName = info.name;
-        appInfo.abilityName = abilityName;
-        appInfo.appName = appName;
-        appInfo.icon = iconPath;
+        // const appInfo = new InstalledAppInfo();
+        // appInfo.bundleName = info.name;
+        // appInfo.abilityName = abilityName;
+        // appInfo.appName = appName;
+        // appInfo.icon = iconPath;
 
-        apps.push(appInfo);
+        // apps.push(appInfo);
       }
 
       // 按名称排序

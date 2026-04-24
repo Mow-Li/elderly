@@ -126,7 +126,8 @@ export struct SettingsPage {
 
   @Builder
   ExitConfirmDialog() {
-    Column() {
+    Stack({ alignContent: Alignment.Center }) {
+      // 遮罩
       Column()
         .width('100%')
         .height('100%')
@@ -135,6 +136,7 @@ export struct SettingsPage {
           this.showExitConfirm = false;
         })
 
+      // 确认卡片（居中）
       Column() {
         Text('退出桌面')
           .fontSize(18)
@@ -171,13 +173,12 @@ export struct SettingsPage {
         }
         .margin({ top: 24 })
       }
-      .width('75%')
+      .width('72%')
       .backgroundColor('#FFFFFF')
       .borderRadius(16)
       .padding(24)
     }
     .width('100%')
     .height('100%')
-    .position({ x: 0, y: 0 } as Position)
   }
 }

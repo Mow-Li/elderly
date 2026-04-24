@@ -22,10 +22,8 @@ export struct ContactEdit {
     const context = getContext(this) as common.UIAbilityContext;
     await StorageUtil.init(context);
 
-    // 获取路由参数
     const params = router.getParams() as EditParams | null;
     if (params && params.contact) {
-      // 编辑模式：复制传入的联系人数据
       this.isEditMode = true;
       this.contact.id = params.contact.id;
       this.contact.name = params.contact.name;
@@ -34,13 +32,12 @@ export struct ContactEdit {
       this.contact.wechatId = params.contact.wechatId;
       this.contact.position = params.contact.position;
     } else {
-      // 添加模式：生成新ID
       this.isEditMode = false;
       this.contact = new Contact();
       this.contact.id = Date.now().toString();
     }
   }
-  // 选择照片
+
   async onSelectPhoto(): Promise<void> {
     try {
       const photoPicker = new photoAccessHelper.PhotoViewPicker();
@@ -58,9 +55,7 @@ export struct ContactEdit {
     }
   }
 
-  // 保存联系人
   async onSave(): Promise<void> {
-    // 表单校验
     if (!this.contact.name || this.contact.name.trim() === '') {
       promptAction.showToast({ message: '请输入姓名' });
       return;
@@ -70,7 +65,6 @@ export struct ContactEdit {
       return;
     }
 
-    // 电话号码格式简单校验（至少7位）
     const phone = this.contact.phone.trim();
     if (phone.length < 7) {
       promptAction.showToast({ message: '电话号码格式不正确' });
@@ -80,22 +74,18 @@ export struct ContactEdit {
     this.isSaving = true;
 
     try {
-      // 修正空白字符
       this.contact.name = this.contact.name.trim();
       this.contact.phone = this.contact.phone.trim();
       this.contact.wechatId = this.contact.wechatId?.trim() ?? '';
 
-      // 获取现有联系人列表
       const contacts = await StorageUtil.getContacts();
 
       if (this.isEditMode) {
-        // 编辑模式：更新现有联系人
         const index = contacts.findIndex(c => c.id === this.contact.id);
         if (index !== -1) {
           contacts[index] = this.contact;
         }
       } else {
-        // 添加模式：追加到列表末尾
         this.contact.position = contacts.length;
         contacts.push(this.contact);
       }
@@ -104,8 +94,6 @@ export struct ContactEdit {
       promptAction.showToast({
         message: this.isEditMode ? '修改成功' : '添加成功'
       });
-
-      // 返回上一页
       router.back();
     } catch (err) {
       console.error(`Failed to save contact: ${JSON.stringify(err)}`);
@@ -115,44 +103,37 @@ export struct ContactEdit {
     }
   }
 
-  // 返回（未保存时提示）
-  async onBack(): Promise<void> {
-    const hasContent = this.contact.name || this.contact.phone || this.contact.photoUri;
-    if (hasContent) {
-      // 有内容，提示是否放弃
-      router.back();
-    } else {
-      router.back();
-    }
-  }
-
   build() {
     Column() {
       // 标题栏
       Row() {
         Text('<')
-          .fontSize(24)
-          .fontColor('#333333')
-          .onClick(() => this.onBack())
+          .fontSize(22)
+          .fontColor('#409EFF')
+          .onClick(() => router.back())
 
         Text(this.isEditMode ? '编辑联系人' : '添加联系人')
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#333333')
-          .margin({ left: 10 })
+          .fontSize(18)
+          .fontWeight(FontWeight.Medium)
+          .fontColor('#1A1A1A')
+          .margin({ left: 6 })
 
         Blank()
 
-        Text('保存')
-          .fontSize(16)
-          .fontColor('#FF9800')
+        Button('保存')
+          .fontSize(14)
+          .fontColor('#FFFFFF')
+          .backgroundColor('#409EFF')
+          .borderRadius(16)
+          .height(32)
+          .padding({ left: 16, right: 16 })
           .onClick(() => this.onSave())
       }
       .width('100%')
-      .height(60)
+      .height(56)
       .padding({ left: 20, right: 20 })
       .backgroundColor('#FFFFFF')
-      .border({ width: { bottom: 1 }, color: { bottom: '#E0E0E0' } })
+      .border({ width: { bottom: 1 }, color: { bottom: '#F2F4F7' } })
 
       Scroll() {
         Column() {
@@ -160,133 +141,126 @@ export struct ContactEdit {
           Column() {
             if (this.contact.photoUri) {
               Image(this.contact.photoUri)
-                .width(100)
-                .height(100)
-                .borderRadius(50)
-                .border({ width: 3, color: '#FF9800' })
+                .width(96)
+                .height(96)
+                .borderRadius(48)
+                .border({ width: 3, color: '#409EFF' })
                 .objectFit(ImageFit.Cover)
                 .onClick(() => this.onSelectPhoto())
             } else {
               Column() {
-                Text('📷')
-                  .fontSize(40)
-                  .fontColor('#CCCCCC')
-                Text('点击选择照片')
-                  .fontSize(12)
-                  .fontColor('#999999')
-                  .margin({ top: 8 })
+                Text('+')
+                  .fontSize(36)
+                  .fontColor('#C0C4CC')
               }
-              .width(100)
-              .height(100)
-              .borderRadius(50)
-              .backgroundColor('#F0F0F0')
+              .width(96)
+              .height(96)
+              .borderRadius(48)
+              .backgroundColor('#F5F7FA')
+              .border({ width: 2, color: '#DCDFE6', style: BorderStyle.Dashed })
               .justifyContent(FlexAlign.Center)
               .onClick(() => this.onSelectPhoto())
             }
 
-            Text('点击头像更换照片')
+            Text('点击更换头像')
               .fontSize(12)
-              .fontColor('#999999')
+              .fontColor('#C0C4CC')
               .margin({ top: 10 })
           }
           .width('100%')
-          .padding({ top: 30, bottom: 30 })
-          .justifyContent(FlexAlign.Center)
+          .padding({ top: 32, bottom: 28 })
+          .alignItems(HorizontalAlign.Center)
 
-          // 表单区域
+          // 表单卡片
           Column() {
             // 姓名
             Column() {
-              Text('姓名 *')
-                .fontSize(14)
-                .fontColor('#999999')
+              Text('姓名')
+                .fontSize(13)
+                .fontColor('#909399')
                 .width('100%')
+                .margin({ bottom: 8 })
 
               TextInput({ text: this.contact.name, placeholder: '请输入联系人姓名' })
-                .fontSize(18)
-                .height(50)
+                .fontSize(16)
+                .height(48)
                 .width('100%')
-                .backgroundColor('#F5F5F5')
-                .borderRadius(12)
-                .margin({ top: 8 })
-                .padding({ left: 16, right: 16 })
+                .backgroundColor('#F5F7FA')
+                .borderRadius(8)
+                .padding({ left: 14, right: 14 })
                 .onChange((value: string) => {
                   this.contact.name = value;
                 })
             }
             .width('100%')
-            .margin({ bottom: 20 })
+            .margin({ bottom: 16 })
 
             // 电话号码
             Column() {
-              Text('电话号码 *')
-                .fontSize(14)
-                .fontColor('#999999')
+              Text('电话号码')
+                .fontSize(13)
+                .fontColor('#909399')
                 .width('100%')
+                .margin({ bottom: 8 })
 
               TextInput({ text: this.contact.phone, placeholder: '请输入手机号码' })
-                .fontSize(18)
-                .height(50)
+                .fontSize(16)
+                .height(48)
                 .width('100%')
                 .type(InputType.PhoneNumber)
-                .backgroundColor('#F5F5F5')
-                .borderRadius(12)
-                .margin({ top: 8 })
-                .padding({ left: 16, right: 16 })
+                .backgroundColor('#F5F7FA')
+                .borderRadius(8)
+                .padding({ left: 14, right: 14 })
                 .onChange((value: string) => {
                   this.contact.phone = value;
                 })
             }
             .width('100%')
-            .margin({ bottom: 20 })
+            .margin({ bottom: 16 })
 
             // 微信ID
             Column() {
               Text('微信ID（选填）')
-                .fontSize(14)
-                .fontColor('#999999')
+                .fontSize(13)
+                .fontColor('#909399')
                 .width('100%')
+                .margin({ bottom: 8 })
 
               TextInput({ text: this.contact.wechatId, placeholder: '用于微信语音/视频通话' })
-                .fontSize(18)
-                .height(50)
+                .fontSize(16)
+                .height(48)
                 .width('100%')
-                .backgroundColor('#F5F5F5')
-                .borderRadius(12)
-                .margin({ top: 8 })
-                .padding({ left: 16, right: 16 })
+                .backgroundColor('#F5F7FA')
+                .borderRadius(8)
+                .padding({ left: 14, right: 14 })
                 .onChange((value: string) => {
                   this.contact.wechatId = value;
                 })
             }
             .width('100%')
-            .margin({ bottom: 20 })
-
-            // 提示说明
-            Column() {
-              Row() {
-                Text('💡')
-                  .fontSize(14)
-                  .margin({ right: 8 })
-                Text('带 * 的为必填项')
-                  .fontSize(14)
-                  .fontColor('#999999')
-              }
-              .width('100%')
-              .margin({ top: 10 })
-            }
-            .width('100%')
           }
           .width('90%')
+          .padding(18)
+          .backgroundColor('#FFFFFF')
+          .borderRadius(12)
+
+          // 提示
+          Row() {
+            Text('* 为必填项')
+              .fontSize(12)
+              .fontColor('#C0C4CC')
+          }
+          .width('90%')
+          .margin({ top: 12 })
         }
         .width('100%')
       }
       .width('100%')
       .layoutWeight(1)
-      .scrollBar(BarState.Off)
+      .backgroundColor('#F2F4F7')
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#FFFFFF')
+    .backgroundColor('#F2F4F7')
   }
 }

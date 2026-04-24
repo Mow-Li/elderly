@@ -1,7 +1,7 @@
 /**
  * 主桌面页面 - 相亲相爱桌面
  */
-import { common, Want } from '@kit.AbilityKit';
+import { common } from '@kit.AbilityKit';
 import { router } from '@kit.ArkUI';
 import { promptAction } from '@kit.ArkUI';
 import { Contact, ContactActionType } from '../models/Contact';
@@ -12,7 +12,7 @@ import { AppLauncherUtil } from '../utils/AppLauncherUtil';
 
 interface ContactAction {
   type: ContactActionType;
-  icon: string;
+  icon: ResourceStr;
   label: string;
 }
 
@@ -28,18 +28,15 @@ export struct Index {
   @State fontSizeConfig: Record<string, number> = { "fontSize": 22, "iconSize": 80 };
 
   private contactActions: ContactAction[] = [
-    { type: ContactActionType.PHONE, icon: '📞', label: '打电话' },
-    { type: ContactActionType.WECHAT_CALL, icon: '💬', label: '微信电话' },
-    { type: ContactActionType.WECHAT_VIDEO, icon: '📹', label: '微信视频' }
+    { type: ContactActionType.PHONE, icon: '�打电话', label: '拨打电话' },
+    { type: ContactActionType.WECHAT_CALL, icon: '', label: '微信通话' },
+    { type: ContactActionType.WECHAT_VIDEO, icon: '', label: '微信视频' }
   ];
 
   async aboutToAppear(): Promise<void> {
-    // 初始化
     const context = getContext(this) as common.UIAbilityContext;
     await StorageUtil.init(context);
     AppLauncherUtil.init(context);
-
-    // 加载数据
     await this.loadData();
   }
 
@@ -56,11 +53,14 @@ export struct Index {
       "fontSize": config.fontSize,
       "iconSize": config.iconSize
     } as Record<string, number>;
-
   }
 
-  // 点击联系人
+  // 点击联系人 - 语音播报 + 弹出操作
   onContactTap(contact: Contact): void {
+    // 语音播报姓名
+    if (this.settings.voiceEnabled) {
+      AppLauncherUtil.speak(contact.name, this.settings.voiceSpeed);
+    }
     this.selectedContact = contact;
     this.showContactDialog = true;
   }
@@ -92,14 +92,8 @@ export struct Index {
     await AppLauncherUtil.launchApp(app.bundleName, app.abilityName);
   }
 
-  // 点击设置
-  onSettingsClick(): void {
-    this.showSettingsDialog = true;
-  }
-
   // 退出桌面
   async exitDesktop(): Promise<void> {
-    // 关闭当前 Ability，让系统回到默认桌面
     try {
       const context = getContext(this) as common.UIAbilityContext;
       context.terminateSelf();
@@ -108,21 +102,24 @@ export struct Index {
     }
   }
 
-  // 跳转到页面
-  pushToPage(pageName: string): void {
-    this.showSettingsDialog = false;
-    router.pushUrl({ url: `pages/${pageName}` });
-  }
-
   build() {
     Stack() {
       Column() {
-        // 标题
-        Text('相亲相爱桌面')
-          .fontSize(this.fontSizeConfig.fontSize + 6)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#333333')
-          .margin({ top: 30, bottom: 20 })
+        // 标题区
+        Column() {
+          Text('相亲相爱桌面')
+            .fontSize(this.fontSizeConfig.fontSize + 8)
+            .fontWeight(FontWeight.Bold)
+            .fontColor('#1A1A1A')
+
+          Text('长按联系人可快速呼叫')
+            .fontSize(this.fontSizeConfig.fontSize - 4)
+            .fontColor('#999999')
+            .margin({ top: 6 })
+        }
+        .width('100%')
+        .padding({ top: 24, bottom: 20 })
+        .alignItems(HorizontalAlign.Center)
 
         // 联系人网格
         this.buildContactGrid()
@@ -133,17 +130,21 @@ export struct Index {
         Blank()
 
         // 设置按钮
-        Button('⚙️ 设置')
+        Button('设置')
           .fontSize(this.fontSizeConfig.fontSize)
-          .backgroundColor('#FF9800')
-          .borderRadius(25)
-          .padding({ left: 40, right: 40, top: 12, bottom: 12 })
-          .onClick(() => this.onSettingsClick())
-          .margin({ bottom: 30 })
+          .fontColor('#FFFFFF')
+          .backgroundColor('#409EFF')
+          .borderRadius(24)
+          .width(200)
+          .height(50)
+          .onClick(() => {
+            this.showSettingsDialog = true;
+          })
+          .margin({ bottom: 32 })
       }
       .width('100%')
       .height('100%')
-      .backgroundColor('#F5F5F5')
+      .backgroundColor('#F2F4F7')
 
       // 联系人操作弹窗
       if (this.showContactDialog && this.selectedContact) {
@@ -162,107 +163,119 @@ export struct Index {
   @Builder
   buildContactGrid() {
     if (this.contacts.length === 0) {
-      Text('点击下方"设置"添加联系人')
-        .fontSize(this.fontSizeConfig.fontSize)
-        .fontColor('#999999')
-        .margin({ top: 40 })
+      Column() {
+        Text('暂无联系人')
+          .fontSize(this.fontSizeConfig.fontSize + 2)
+          .fontColor('#999999')
+        Text('请在设置中添加')
+          .fontSize(this.fontSizeConfig.fontSize - 2)
+          .fontColor('#CCCCCC')
+          .margin({ top: 8 })
+      }
+      .width('100%')
+      .padding({ top: 60 })
     } else {
       Grid() {
-        ForEach(this.contacts, (contact: Contact, index: number) => {
+        ForEach(this.contacts, (contact: Contact) => {
           GridItem() {
             Column() {
+              // 头像
               if (contact.photoUri) {
                 Image(contact.photoUri)
                   .width(this.fontSizeConfig.iconSize)
                   .height(this.fontSizeConfig.iconSize)
                   .borderRadius(this.fontSizeConfig.iconSize / 2)
                   .objectFit(ImageFit.Cover)
-                  .border({ width: 3, color: '#FF9800' })
+                  .border({ width: 3, color: '#409EFF' })
               } else {
-                Text(contact.name.charAt(0))
-                  .fontSize(this.fontSizeConfig.iconSize * 0.4)
-                  .fontWeight(FontWeight.Bold)
-                  .fontColor('#FFFFFF')
-                  .width(this.fontSizeConfig.iconSize)
-                  .height(this.fontSizeConfig.iconSize)
-                  .borderRadius(this.fontSizeConfig.iconSize / 2)
-                  .backgroundColor('#FF9800')
-                  .textAlign(TextAlign.Center)
+                Column() {
+                  Text(contact.name.charAt(0))
+                    .fontSize(this.fontSizeConfig.iconSize * 0.38)
+                    .fontWeight(FontWeight.Bold)
+                    .fontColor('#FFFFFF')
+                }
+                .width(this.fontSizeConfig.iconSize)
+                .height(this.fontSizeConfig.iconSize)
+                .borderRadius(this.fontSizeConfig.iconSize / 2)
+                .backgroundColor('#409EFF')
+                .justifyContent(FlexAlign.Center)
               }
 
               Text(contact.name)
                 .fontSize(this.fontSizeConfig.fontSize)
-                .fontColor('#333333')
-                .margin({ top: 8 })
+                .fontColor('#1A1A1A')
+                .margin({ top: 10 })
                 .maxLines(1)
             }
+            .width('100%')
             .onClick(() => this.onContactTap(contact))
           }
         })
       }
       .columnsTemplate('1fr 1fr 1fr')
-      .columnsGap(15)
-      .rowsGap(20)
-      .width('90%')
-      .height('40%')
-      .margin({ left: '5%', right: '5%' })
+      .columnsGap(16)
+      .rowsGap(24)
+      .width('100%')
+      .padding({ left: 24, right: 24 })
     }
   }
 
   @Builder
   buildAppGrid() {
-    Column() {
-      if (this.appShortcuts.filter(a => a.enabled).length > 0) {
+    const enabledApps = this.appShortcuts.filter(a => a.enabled);
+    if (enabledApps.length === 0) {
+      Blank()
+    } else {
+      Column() {
+        Text('快捷应用')
+          .fontSize(this.fontSizeConfig.fontSize - 2)
+          .fontColor('#999999')
+          .width('100%')
+          .padding({ left: 24, right: 24, top: 16, bottom: 10 })
+
         Grid() {
-          ForEach(this.appShortcuts.filter(a => a.enabled), (app: AppShortcut) => {
+          ForEach(enabledApps, (app: AppShortcut) => {
             GridItem() {
               Column() {
-                if (app.iconUri) {
-                  Image(app.iconUri)
-                    .width(this.fontSizeConfig.iconSize * 0.6)
-                    .height(this.fontSizeConfig.iconSize * 0.6)
-                    .borderRadius(12)
-                    .objectFit(ImageFit.Cover)
-                } else {
+                Column() {
                   Text(app.appName.charAt(0))
-                    .fontSize(this.fontSizeConfig.iconSize * 0.3)
+                    .fontSize(this.fontSizeConfig.iconSize * 0.28)
                     .fontColor('#FFFFFF')
-                    .width(this.fontSizeConfig.iconSize * 0.6)
-                    .height(this.fontSizeConfig.iconSize * 0.6)
-                    .borderRadius(12)
-                    .backgroundColor('#4CAF50')
-                    .textAlign(TextAlign.Center)
                 }
+                .width(this.fontSizeConfig.iconSize * 0.55)
+                .height(this.fontSizeConfig.iconSize * 0.55)
+                .borderRadius(14)
+                .backgroundColor('#67C23A')
+                .justifyContent(FlexAlign.Center)
 
                 Text(app.appName)
                   .fontSize(this.fontSizeConfig.fontSize - 4)
-                  .fontColor('#333333')
-                  .margin({ top: 6 })
+                  .fontColor('#1A1A1A')
+                  .margin({ top: 8 })
                   .maxLines(1)
               }
+              .width('100%')
               .onClick(() => this.onAppTap(app))
             }
           })
         }
         .columnsTemplate('1fr 1fr 1fr')
-        .columnsGap(10)
-        .rowsGap(10)
-        .width('90%')
-        .padding(10)
+        .columnsGap(12)
+        .rowsGap(16)
+        .width('100%')
+        .padding({ left: 24, right: 24 })
       }
     }
-    .width('100%')
-    .margin({ top: 20 })
   }
 
   @Builder
   ContactActionDialog() {
     Column() {
-      // 遮罩
+      // 遮罩层
       Column()
         .width('100%')
         .height('100%')
-        .backgroundColor('rgba(0, 0, 0, 0.5)')
+        .backgroundColor('rgba(0, 0, 0, 0.45)')
         .onClick(() => {
           this.showContactDialog = false;
           this.selectedContact = null;
@@ -270,56 +283,89 @@ export struct Index {
 
       // 弹窗内容
       Column() {
+        // 头部
+        Row() {
+          Text(this.selectedContact?.name ?? '')
+            .fontSize(20)
+            .fontWeight(FontWeight.Medium)
+            .fontColor('#1A1A1A')
+
+          Blank()
+
+          Text('x')
+            .fontSize(22)
+            .fontColor('#C0C4CC')
+            .onClick(() => {
+              this.showContactDialog = false;
+              this.selectedContact = null;
+            })
+        }
+        .width('100%')
+        .padding({ left: 24, right: 24, top: 20, bottom: 16 })
+
+        Divider().color('#EBEEF5').margin({ left: 24, right: 24 })
+
         // 头像
         if (this.selectedContact?.photoUri) {
           Image(this.selectedContact.photoUri)
-            .width(80)
-            .height(80)
-            .borderRadius(40)
-            .border({ width: 3, color: '#FF9800' })
-            .margin({ top: 20 })
+            .width(72)
+            .height(72)
+            .borderRadius(36)
+            .border({ width: 2, color: '#409EFF' })
+            .margin({ top: 16 })
+        } else {
+          Column() {
+            Text(this.selectedContact?.name?.charAt(0) ?? '')
+              .fontSize(28)
+              .fontWeight(FontWeight.Bold)
+              .fontColor('#FFFFFF')
+          }
+          .width(72)
+          .height(72)
+          .borderRadius(36)
+          .backgroundColor('#409EFF')
+          .justifyContent(FlexAlign.Center)
+          .margin({ top: 16 })
         }
 
-        Text(this.selectedContact?.name ?? '')
-          .fontSize(24)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#333333')
-          .margin({ top: 10 })
+        Text(this.selectedContact?.phone ?? '')
+          .fontSize(14)
+          .fontColor('#909399')
+          .margin({ top: 8 })
 
         // 操作按钮
-        Column({ space: 12 }) {
+        Column({ space: 10 }) {
           ForEach(this.contactActions, (action: ContactAction) => {
-            Button(`${action.icon} ${action.label}`)
-              .width('80%')
-              .height(50)
-              .fontSize(18)
-              .backgroundColor('#FFFFFF')
-              .fontColor('#333333')
-              .borderRadius(25)
-              .border({ width: 1, color: '#E0E0E0' })
+            Button(action.label)
+              .width('85%')
+              .height(48)
+              .fontSize(16)
+              .fontColor('#FFFFFF')
+              .backgroundColor('#409EFF')
+              .borderRadius(24)
               .onClick(() => this.doContactAction(action.type))
           })
         }
-        .margin({ top: 25 })
+        .margin({ top: 20 })
 
         // 取消
         Button('取消')
-          .width('80%')
-          .height(45)
-          .fontSize(16)
-          .backgroundColor('#F5F5F5')
-          .fontColor('#666666')
+          .width('85%')
+          .height(44)
+          .fontSize(15)
+          .fontColor('#606266')
+          .backgroundColor('#F2F4F7')
           .borderRadius(22)
-          .margin({ top: 20, bottom: 25 })
+          .margin({ top: 10, bottom: 24 })
           .onClick(() => {
             this.showContactDialog = false;
             this.selectedContact = null;
           })
       }
-      .width('85%')
+      .width('78%')
       .backgroundColor('#FFFFFF')
-      .borderRadius(20)
-      .margin({ top: '15%' })
+      .borderRadius(16)
+      .margin({ top: '18%' })
     }
     .width('100%')
     .height('100%')
@@ -333,7 +379,7 @@ export struct Index {
       Column()
         .width('100%')
         .height('100%')
-        .backgroundColor('rgba(0, 0, 0, 0.5)')
+        .backgroundColor('rgba(0, 0, 0, 0.45)')
         .onClick(() => {
           this.showSettingsDialog = false;
         })
@@ -343,80 +389,80 @@ export struct Index {
         // 标题
         Row() {
           Text('设置')
-            .fontSize(22)
-            .fontWeight(FontWeight.Bold)
-            .fontColor('#333333')
+            .fontSize(20)
+            .fontWeight(FontWeight.Medium)
+            .fontColor('#1A1A1A')
 
           Blank()
 
-          Text('×')
-            .fontSize(28)
-            .fontColor('#999999')
+          Text('x')
+            .fontSize(22)
+            .fontColor('#C0C4CC')
             .onClick(() => {
               this.showSettingsDialog = false;
             })
         }
         .width('100%')
-        .padding(20)
+        .padding({ left: 24, right: 24, top: 20, bottom: 16 })
 
-        Text().border({ width: { bottom: 1 }, color: { bottom: '#E0E0E0' } })
+        Divider().color('#EBEEF5').margin({ left: 24, right: 24 })
 
-
-
-        // 设置项
+        // 设置项列表
         Column() {
-          this.SettingItem('👨 联系人管理', () => this.pushToPage('ContactManage'))
-          Divider().color('#E0E0E0').margin({ left: 20, right: 20 })
+          this.SettingItem('联系人管理', 'ContactManage')
+          Divider().color('#F2F4F7').margin({ left: 24, right: 24 })
 
-          this.SettingItem('📱 应用管理', () => this.pushToPage('AppManage'))
-          Divider().color('#E0E0E0').margin({ left: 20, right: 20 })
+          this.SettingItem('应用管理', 'AppManage')
+          Divider().color('#F2F4F7').margin({ left: 24, right: 24 })
 
-          this.SettingItem('🔊 语音设置', () => this.pushToPage('VoiceSetting'))
-          Divider().color('#E0E0E0').margin({ left: 20, right: 20 })
+          this.SettingItem('语音设置', 'VoiceSetting')
+          Divider().color('#F2F4F7').margin({ left: 24, right: 24 })
 
-          this.SettingItem('📏 字体大小', () => this.pushToPage('FontSizeSetting'))
+          this.SettingItem('字体大小', 'FontSizeSetting')
         }
-        .margin({ top: 10 })
+        .width('100%')
+        .margin({ top: 8 })
 
         Blank()
 
         // 退出桌面
-        Button('🚪 退出桌面')
+        Button('退出桌面')
           .width('100%')
-          .height(55)
-          .fontSize(18)
-          .backgroundColor('#F5F5F5')
-          .fontColor('#FF5722')
+          .height(50)
+          .fontSize(16)
+          .fontColor('#F56C6C')
+          .backgroundColor('#FEF0F0')
           .borderRadius(0)
           .onClick(() => this.exitDesktop())
       }
-      .width('90%')
-      .height(380)
+      .width('100%')
+      .height(340)
       .backgroundColor('#FFFFFF')
-      .borderRadius(20)
-      .margin({ top: '20%' })
     }
     .width('100%')
     .height('100%')
-    .position({ x: 0, y: 0 })
+    .position({ x: 0, y: 0 } as Position)
   }
 
   @Builder
-  SettingItem(label: string, onClick: () => void) {
+  SettingItem(label: string, pageName: string) {
     Row() {
       Text(label)
-        .fontSize(18)
-        .fontColor('#333333')
+        .fontSize(16)
+        .fontColor('#303133')
 
       Blank()
 
       Text('>')
-        .fontSize(18)
-        .fontColor('#CCCCCC')
+        .fontSize(16)
+        .fontColor('#C0C4CC')
     }
     .width('100%')
-    .height(55)
-    .padding({ left: 20, right: 20 })
-    .onClick(onClick)
+    .height(54)
+    .padding({ left: 24, right: 24 })
+    .onClick(() => {
+      this.showSettingsDialog = false;
+      router.pushUrl({ url: `pages/${pageName}` });
+    })
   }
 }

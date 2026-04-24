@@ -27,91 +27,92 @@ export struct FontSizeSetting {
       // 标题栏
       Row() {
         Text('<')
-          .fontSize(24)
-          .fontColor('#333333')
+          .fontSize(22)
+          .fontColor('#303133')
           .onClick(() => router.back())
 
         Text('字体大小')
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .fontColor('#333333')
-          .margin({ left: 10 })
+          .fontSize(18)
+          .fontWeight(FontWeight.Medium)
+          .fontColor('#1A1A1A')
+          .margin({ left: 8 })
       }
       .width('100%')
-      .height(60)
+      .height(56)
       .padding({ left: 20, right: 20 })
       .backgroundColor('#FFFFFF')
+      .border({ width: { bottom: 1 }, color: { bottom: '#F2F4F7' } })
 
-      // 预览
       Column() {
-        Text('预览效果')
-          .fontSize(14)
-          .fontColor('#999999')
-          .margin({ bottom: 15 })
-
+        // 预览卡片
         Column() {
-          Text('儿子')
-            .fontSize(FONT_SIZE_PRESETS[this.settings.fontSize].fontSize)
-            .fontColor('#333333')
+          Text('当前预览')
+            .fontSize(12)
+            .fontColor('#C0C4CC')
+            .width('100%')
+            .margin({ bottom: 12 })
 
-          Text('女儿')
-            .fontSize(FONT_SIZE_PRESETS[this.settings.fontSize].fontSize)
-            .fontColor('#333333')
-            .margin({ top: 10 })
+          Column() {
+            Text('儿子')
+              .fontSize(FONT_SIZE_PRESETS[this.settings.fontSize].fontSize)
+              .fontColor('#1A1A1A')
 
-          Text('老伴')
-            .fontSize(FONT_SIZE_PRESETS[this.settings.fontSize].fontSize)
-            .fontColor('#333333')
-            .margin({ top: 10 })
-        }
-        .width('100%')
-        .padding(20)
-        .backgroundColor('#F5F5F5')
-        .borderRadius(12)
-      }
-      .width('90%')
-      .margin({ top: 25 })
+            Text('女儿')
+              .fontSize(FONT_SIZE_PRESETS[this.settings.fontSize].fontSize)
+              .fontColor('#1A1A1A')
+              .margin({ top: 10 })
 
-      // 选项列表
-      Column() {
-        ForEach(FONT_SIZE_PRESETS, (config: FontSizeConfig) => {
-          Row() {
-            Text(config.label)
-              .fontSize(config.fontSize)
-              .fontColor('#333333')
-              .width(60)
-
-            Text('Aa')
-              .fontSize(config.fontSize)
-              .fontColor('#333333')
-
-            Blank()
-
-            if (this.settings.fontSize === config.level) {
-              Text('✓')
-                .fontSize(20)
-                .fontColor('#FF9800')
-            }
+            Text('老伴')
+              .fontSize(FONT_SIZE_PRESETS[this.settings.fontSize].fontSize)
+              .fontColor('#1A1A1A')
+              .margin({ top: 10 })
           }
           .width('100%')
-          .height(60)
-          .padding({ left: 20, right: 20 })
-          .onClick(() => this.onSelectFontSize(config.level))
+          .padding(20)
+          .backgroundColor('#F5F7FA')
+          .borderRadius(10)
+        }
+        .width('100%')
+        .margin({ bottom: 20 })
 
-          if (config.level !== FontSizeLevel.EXTRA_EXTRA_LARGE) {
-            Divider()
-              .color('#E0E0E0')
-              .margin({ left: 20, right: 20 })
-          }
-        })
+        // 选项列表
+        Column() {
+          ForEach(FONT_SIZE_PRESETS, (config: FontSizeConfig) => {
+            Column() {
+              Row() {
+                Text(config.label)
+                  .fontSize(config.fontSize)
+                  .fontColor(this.settings.fontSize === config.level ? '#409EFF' : '#1A1A1A')
+                  .width(50)
+
+                Text('示例文本')
+                  .fontSize(config.fontSize * 0.75)
+                  .fontColor(this.settings.fontSize === config.level ? '#409EFF' : '#909399')
+
+                Blank()
+
+                if (this.settings.fontSize === config.level) {
+                  Text('checked')
+                    .fontSize(14)
+                    .fontColor('#409EFF')
+                }
+              }
+              .width('100%')
+              .height(52)
+              .padding({ left: 16, right: 16 })
+              .onClick(() => this.onSelectFontSize(config.level))
+            }
+          })
+        }
+        .width('100%')
+        .backgroundColor('#FFFFFF')
+        .borderRadius(12)
       }
-      .width('90%')
-      .margin({ top: 25 })
-      .backgroundColor('#FFFFFF')
-      .borderRadius(12)
+      .width('92%')
+      .margin({ top: 20 })
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#F5F5F5')
+    .backgroundColor('#F2F4F7')
   }
 }

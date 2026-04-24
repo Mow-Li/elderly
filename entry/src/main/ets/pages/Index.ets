@@ -24,7 +24,6 @@ export struct Index {
   @State settings: AppSettings = new AppSettings();
   @State showContactDialog: boolean = false;
   @State selectedContact: Contact | null = null;
-  @State showSettingsDialog: boolean = false;
   @State showExitConfirm: boolean = false;
   @State fontSizeConfig: Record<string, number> = { "fontSize": 22, "iconSize": 80 };
 
@@ -93,13 +92,6 @@ export struct Index {
     await AppLauncherUtil.launchApp(app.bundleName, app.abilityName);
   }
 
-  // 退出桌面
-  // 退出桌面（弹出确认）
-  exitDesktop(): void {
-    this.showSettingsDialog = false;
-    this.showExitConfirm = true;
-  }
-
   // 确认退出
   confirmExit(): void {
     this.showExitConfirm = false;
@@ -147,7 +139,7 @@ export struct Index {
           .width(200)
           .height(50)
           .onClick(() => {
-            this.showSettingsDialog = true;
+            router.pushUrl({ url: 'pages/SettingsPage' });
           })
           .margin({ bottom: 32 })
       }
@@ -158,11 +150,6 @@ export struct Index {
       // 联系人操作弹窗
       if (this.showContactDialog && this.selectedContact) {
         this.ContactActionDialog()
-      }
-
-      // 设置弹窗
-      if (this.showSettingsDialog) {
-        this.SettingsDialog()
       }
 
       // 退出确认弹窗
@@ -382,100 +369,6 @@ export struct Index {
     .width('100%')
     .height('100%')
     .position({ x: 0, y: 0 } as Position)
-  }
-
-  @Builder
-  SettingsDialog() {
-    Column() {
-      // 遮罩
-      Column()
-        .width('100%')
-        .height('100%')
-        .backgroundColor('rgba(0, 0, 0, 0.45)')
-        .onClick(() => {
-          this.showSettingsDialog = false;
-        })
-
-      // 设置面板
-      Column() {
-        // 标题
-        Row() {
-          Text('设置')
-            .fontSize(20)
-            .fontWeight(FontWeight.Medium)
-            .fontColor('#1A1A1A')
-
-          Blank()
-
-          Text('x')
-            .fontSize(22)
-            .fontColor('#C0C4CC')
-            .onClick(() => {
-              this.showSettingsDialog = false;
-            })
-        }
-        .width('100%')
-        .padding({ left: 24, right: 24, top: 20, bottom: 16 })
-
-        Divider().color('#EBEEF5').margin({ left: 24, right: 24 })
-
-        // 设置项列表
-        Column() {
-          this.SettingItem('联系人管理', 'ContactManage')
-          Divider().color('#F2F4F7').margin({ left: 24, right: 24 })
-
-          this.SettingItem('应用管理', 'AppManage')
-          Divider().color('#F2F4F7').margin({ left: 24, right: 24 })
-
-          this.SettingItem('语音设置', 'VoiceSetting')
-          Divider().color('#F2F4F7').margin({ left: 24, right: 24 })
-
-          this.SettingItem('字体大小', 'FontSizeSetting')
-        }
-        .width('100%')
-        .margin({ top: 8 })
-
-        Blank()
-
-        // 退出桌面
-        Button('退出桌面')
-          .width('100%')
-          .height(50)
-          .fontSize(16)
-          .fontColor('#F56C6C')
-          .backgroundColor('#FEF0F0')
-          .borderRadius(0)
-          .onClick(() => this.exitDesktop())
-      }
-      .width('100%')
-      .height(340)
-      .backgroundColor('#FFFFFF')
-    }
-    .width('100%')
-    .height('100%')
-    .position({ x: 0, y: 0 } as Position)
-  }
-
-  @Builder
-  SettingItem(label: string, pageName: string) {
-    Row() {
-      Text(label)
-        .fontSize(16)
-        .fontColor('#303133')
-
-      Blank()
-
-      Text('>')
-        .fontSize(16)
-        .fontColor('#C0C4CC')
-    }
-    .width('100%')
-    .height(54)
-    .padding({ left: 24, right: 24 })
-    .onClick(() => {
-      this.showSettingsDialog = false;
-      router.pushUrl({ url: `pages/${pageName}` });
-    })
   }
 
   @Builder

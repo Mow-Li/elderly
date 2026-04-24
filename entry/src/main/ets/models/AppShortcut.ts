@@ -17,8 +17,7 @@ export class AppShortcut {
     this.enabled = false;
     this.position = 0;
   }
-
-  static fromJson(json: Record<string => Object>): AppShortcut {
+  static fromJson(json: Record<string, Object>): AppShortcut {
     const app = new AppShortcut();
     app.bundleName = json['bundleName'] as string ?? '';
     app.abilityName = json['abilityName'] as string ?? '';
@@ -28,8 +27,7 @@ export class AppShortcut {
     app.position = json['position'] as number ?? 0;
     return app;
   }
-
-  toJson(): Record<string => Object> {
+  toJson(): Record<string, Object> {
     return {
       bundleName: this.bundleName,
       abilityName: this.abilityName,

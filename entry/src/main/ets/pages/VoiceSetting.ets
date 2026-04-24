@@ -2,10 +2,11 @@
  * 语音设置页面
  */
 import { common } from '@kit.AbilityKit';
-import { router } from '@kit.ArkUI';
+import { promptAction, router } from '@kit.ArkUI';
 import { AppSettings } from '../models/Settings';
 import { StorageUtil } from '../utils/StorageUtil';
 
+@Entry
 @Component
 export struct VoiceSetting {
   @State settings: AppSettings = new AppSettings();

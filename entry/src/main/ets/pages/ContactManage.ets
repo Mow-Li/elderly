@@ -3,9 +3,10 @@
  */
 import { common } from '@kit.AbilityKit';
 import { router } from '@kit.ArkUI';
+import { promptAction } from '@kit.ArkUI';
 import { Contact } from '../models/Contact';
 import { StorageUtil } from '../utils/StorageUtil';
-
+@Entry
 @Component
 export struct ContactManage {
   @State contacts: Contact[] = [];
@@ -34,7 +35,13 @@ export struct ContactManage {
 
   // 编辑联系人
   onEditContact(contact: Contact): void {
-    this.editingContact = { ...contact } as Contact;
+    this.editingContact = new Contact();
+    this.editingContact.id = contact.id;
+    this.editingContact.name = contact.name;
+    this.editingContact.photoUri = contact.photoUri;
+    this.editingContact.phone = contact.phone;
+    this.editingContact.wechatId = contact.wechatId;
+    this.editingContact.position = contact.position;
     this.isEditMode = true;
     this.showEditDialog = true;
   }

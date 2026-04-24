@@ -17,8 +17,7 @@ export class Contact {
     this.wechatId = '';
     this.position = 0;
   }
-
-  static fromJson(json: Record<string => Object>): Contact {
+  static fromJson(json: Record<string, Object>): Contact {
     const contact = new Contact();
     contact.id = json['id'] as string ?? '';
     contact.name = json['name'] as string ?? '';
@@ -28,8 +27,7 @@ export class Contact {
     contact.position = json['position'] as number ?? 0;
     return contact;
   }
-
-  toJson(): Record<string => Object> {
+  toJson(): Record<string, Object> {
     return {
       id: this.id,
       name: this.name,

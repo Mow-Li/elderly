@@ -43,16 +43,14 @@ export class AppSettings {
     this.voiceEnabled = true;
     this.voiceSpeed = 1.0;
   }
-
-  static fromJson(json: Record<string => Object>): AppSettings {
+  static fromJson(json: Record<string, Object>): AppSettings {
     const settings = new AppSettings();
     settings.fontSize = (json['fontSize'] as FontSizeLevel) ?? FontSizeLevel.LARGE;
     settings.voiceEnabled = json['voiceEnabled'] as boolean ?? true;
     settings.voiceSpeed = json['voiceSpeed'] as number ?? 1.0;
     return settings;
   }
-
-  toJson(): Record<string => Object> {
+  toJson(): Record<string, Object> {
     return {
       fontSize: this.fontSize,
       voiceEnabled: this.voiceEnabled,

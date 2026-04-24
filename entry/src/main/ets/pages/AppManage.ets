@@ -3,10 +3,11 @@
  */
 import { common } from '@kit.AbilityKit';
 import { router } from '@kit.ArkUI';
+import { promptAction } from '@kit.ArkUI';
 import { AppShortcut, InstalledAppInfo } from '../models/AppShortcut';
 import { StorageUtil } from '../utils/StorageUtil';
 import { AppLauncherUtil } from '../utils/AppLauncherUtil';
-
+@Entry
 @Component
 export struct AppManage {
   @State installedApps: InstalledAppInfo[] = [];

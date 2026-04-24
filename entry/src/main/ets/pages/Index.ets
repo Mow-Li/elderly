@@ -16,6 +16,7 @@ interface ContactAction {
   label: string;
 }
 
+@Entry
 @Component
 export struct Index {
   @State contacts: Contact[] = [];
@@ -24,7 +25,7 @@ export struct Index {
   @State showContactDialog: boolean = false;
   @State selectedContact: Contact | null = null;
   @State showSettingsDialog: boolean = false;
-  @State fontSizeConfig: Record<string, number> = { fontSize: 22, iconSize: 80 };
+  @State fontSizeConfig: Record<string, number> = { "fontSize": 22, "iconSize": 80 };
 
   private contactActions: ContactAction[] = [
     { type: ContactActionType.PHONE, icon: '📞', label: '打电话' },
@@ -52,9 +53,10 @@ export struct Index {
   updateFontSize(): void {
     const config = FONT_SIZE_PRESETS[this.settings.fontSize];
     this.fontSizeConfig = {
-      fontSize: config.fontSize,
-      iconSize: config.iconSize
-    };
+      "fontSize": config.fontSize,
+      "iconSize": config.iconSize
+    } as Record<string, number>;
+
   }
 
   // 点击联系人
@@ -321,7 +323,7 @@ export struct Index {
     }
     .width('100%')
     .height('100%')
-    .position({ x: 0, y: 0 })
+    .position({ x: 0, y: 0 } as Position)
   }
 
   @Builder
@@ -356,7 +358,10 @@ export struct Index {
         }
         .width('100%')
         .padding(20)
-        .borderBottom({ width: 1, color: '#E0E0E0' })
+
+        Text().border({ width: { bottom: 1 }, color: { bottom: '#E0E0E0' } })
+
+
 
         // 设置项
         Column() {

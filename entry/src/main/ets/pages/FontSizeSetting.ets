@@ -3,9 +3,10 @@
  */
 import { common } from '@kit.AbilityKit';
 import { router } from '@kit.ArkUI';
-import { AppSettings, FONT_SIZE_PRESETS, FontSizeLevel } from '../models/Settings';
+import { AppSettings, FONT_SIZE_PRESETS, FontSizeLevel, FontSizeConfig } from '../models/Settings';
 import { StorageUtil } from '../utils/StorageUtil';
 
+@Entry
 @Component
 export struct FontSizeSetting {
   @State settings: AppSettings = new AppSettings();
@@ -73,7 +74,7 @@ export struct FontSizeSetting {
 
       // 选项列表
       Column() {
-        ForEach(FONT_SIZE_PRESETS, (config) => {
+        ForEach(FONT_SIZE_PRESETS, (config: FontSizeConfig) => {
           Row() {
             Text(config.label)
               .fontSize(config.fontSize)

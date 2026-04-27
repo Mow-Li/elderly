@@ -40,8 +40,8 @@ export struct ContactEdit {
 
   async onSelectPhoto(): Promise<void> {
     try {
-      const photoPicker = new photoAccessHelper.PhotoViewPicker();
-      const result = await photoPicker.select({
+      const photoPicker: photoAccessHelper.PhotoViewPicker = new photoAccessHelper.PhotoViewPicker();
+      const result: photoAccessHelper.PhotoSelectResult = await photoPicker.select({
         MIMEType: photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE,
         maxSelectNumber: 1
       });
@@ -89,12 +89,14 @@ export struct ContactEdit {
         this.contact.position = contacts.length;
         contacts.push(this.contact);
       }
-
       await StorageUtil.saveContacts(contacts);
       promptAction.showToast({
-        message: '保存成功'
+        message: '保存成功',
+        duration: 2000
       });
-      router.pushUrl({ url: 'pages/ContactManage' });
+      setTimeout(() => {
+        router.pushUrl({ url: 'pages/ContactManage' });
+      }, 2000);
     } catch (err) {
       console.error(`Failed to save contact: ${JSON.stringify(err)}`);
       promptAction.showToast({ message: '保存失败，请重试' });

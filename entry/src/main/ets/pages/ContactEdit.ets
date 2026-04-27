@@ -95,8 +95,13 @@ export struct ContactEdit {
         duration: 2000
       });
       setTimeout(() => {
-        router.pushUrl({ url: 'pages/ContactManage' });
-      }, 2000);
+        try {
+          router.pushUrl({ url: 'pages/ContactManage' });
+        } catch (err) {
+          console.error(`Navigation failed: ${JSON.stringify(err)}`);
+          router.back();
+        }
+      }, 2100);
     } catch (err) {
       console.error(`Failed to save contact: ${JSON.stringify(err)}`);
       promptAction.showToast({ message: '保存失败，请重试' });

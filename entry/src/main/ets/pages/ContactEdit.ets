@@ -92,9 +92,9 @@ export struct ContactEdit {
 
       await StorageUtil.saveContacts(contacts);
       promptAction.showToast({
-        message: this.isEditMode ? '修改成功' : '添加成功'
+        message: '保存成功'
       });
-      router.back();
+      router.pushUrl({ url: 'pages/ContactManage' });
     } catch (err) {
       console.error(`Failed to save contact: ${JSON.stringify(err)}`);
       promptAction.showToast({ message: '保存失败，请重试' });

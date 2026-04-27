@@ -4,11 +4,14 @@
 import { common } from '@kit.AbilityKit';
 import { router } from '@kit.ArkUI';
 import { promptAction } from '@kit.ArkUI';
-
 interface SettingsItem {
   label: string;
   pageName: string;
   desc?: string;
+}
+
+interface ExitConfirmDialogParams {
+  showExitConfirm: boolean;
 }
 
 @Entry
@@ -114,18 +117,16 @@ export struct SettingsPage {
       .width('100%')
       .height('100%')
       .backgroundColor('#F2F4F7')
-
       // 退出确认弹窗
       if (this.showExitConfirm) {
-        this.ExitConfirmDialog()
+        this.ExitConfirmDialog({ showExitConfirm: this.showExitConfirm })
       }
     }
     .width('100%')
     .height('100%')
   }
-
   @Builder
-  ExitConfirmDialog() {
+  ExitConfirmDialog(params: ExitConfirmDialogParams) {
     Stack({ alignContent: Alignment.Center }) {
       // 遮罩
       Column()
@@ -133,7 +134,7 @@ export struct SettingsPage {
         .height('100%')
         .backgroundColor('rgba(0, 0, 0, 0.5)')
         .onClick(() => {
-          this.showExitConfirm = false;
+          params.showExitConfirm = false;
         })
 
       // 确认卡片（居中）
@@ -157,9 +158,8 @@ export struct SettingsPage {
             .backgroundColor('#F2F4F7')
             .borderRadius(22)
             .onClick(() => {
-              this.showExitConfirm = false;
+              params.showExitConfirm = false;
             })
-
           Button('确认退出')
             .width('46%')
             .height(44)

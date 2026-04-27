@@ -9,11 +9,21 @@ import { AppShortcut } from '../models/AppShortcut';
 import { AppSettings, FONT_SIZE_PRESETS, FontSizeLevel } from '../models/Settings';
 import { StorageUtil } from '../utils/StorageUtil';
 import { AppLauncherUtil } from '../utils/AppLauncherUtil';
-
 interface ContactAction {
   type: ContactActionType;
   icon: ResourceStr;
   label: string;
+}
+interface BuildAppGridParams {
+  appShortcuts: AppShortcut[];
+  fontSizeConfig: Record<string, number>;
+}
+interface ContactActionDialogParams {
+  showContactDialog: boolean;
+  selectedContact: Contact | null;
+}
+interface ExitConfirmDialogParams {
+  showExitConfirm: boolean;
 }
 
 @Entry
@@ -181,9 +191,8 @@ export struct Index {
         .width('100%')
         .height(260)
         .layoutWeight(1)
-
         // 应用快捷方式（固定高度）
-        this.buildAppGrid()
+        this.buildAppGrid({ appShortcuts: this.appShortcuts, fontSizeConfig: this.fontSizeConfig })
 
         // 设置按钮（固定在底部）
         Column() {
@@ -205,49 +214,45 @@ export struct Index {
       .width('100%')
       .height('100%')
       .backgroundColor('#F2F4F7')
-
       // 联系人操作弹窗
       if (this.showContactDialog && this.selectedContact) {
-        this.ContactActionDialog()
+        this.ContactActionDialog({ showContactDialog: this.showContactDialog, selectedContact: this.selectedContact })
       }
 
       // 退出确认弹窗
       if (this.showExitConfirm) {
-        this.ExitConfirmDialog()
+        this.ExitConfirmDialog({ showExitConfirm: this.showExitConfirm })
       }
     }
     .width('100%')
     .height('100%')
   }
-
   @Builder
-  buildAppGrid() {
-    const enabledApps = this.appShortcuts.filter(a => a.enabled);
+  buildAppGrid(params: BuildAppGridParams) {
     Column() {
-      if (enabledApps.length > 0) {
+      if (params.appShortcuts.filter(a => a.enabled).length > 0) {
         Text('快捷应用')
-          .fontSize(this.fontSizeConfig.fontSize - 2)
+          .fontSize(params.fontSizeConfig.fontSize - 2)
           .fontColor('#999999')
           .width('100%')
           .padding({ left: 24, right: 24, top: 12, bottom: 8 })
-
         Grid() {
-          ForEach(enabledApps, (app: AppShortcut) => {
+          ForEach(params.appShortcuts.filter(a => a.enabled), (app: AppShortcut) => {
             GridItem() {
               Column() {
                 Column() {
                   Text(app.appName.charAt(0))
-                    .fontSize(this.fontSizeConfig.iconSize * 0.25)
+                    .fontSize(params.fontSizeConfig.iconSize * 0.25)
                     .fontColor('#FFFFFF')
                 }
-                .width(this.fontSizeConfig.iconSize * 0.5)
-                .height(this.fontSizeConfig.iconSize * 0.5)
+                .width(params.fontSizeConfig.iconSize * 0.5)
+                .height(params.fontSizeConfig.iconSize * 0.5)
                 .borderRadius(12)
                 .backgroundColor('#67C23A')
                 .justifyContent(FlexAlign.Center)
 
                 Text(app.appName)
-                  .fontSize(this.fontSizeConfig.fontSize - 4)
+                  .fontSize(params.fontSizeConfig.fontSize - 4)
                   .fontColor('#1A1A1A')
                   .margin({ top: 6 })
                   .maxLines(1)
@@ -265,53 +270,10 @@ export struct Index {
       }
     }
     .width('100%')
-    .height(enabledApps.length > 0 ? 140 : 0)
+    .height(params.appShortcuts.filter(a => a.enabled).length > 0 ? 140 : 0)
   }
-
-      Column() {
-        Text('快捷应用')
-          .fontSize(this.fontSizeConfig.fontSize - 2)
-          .fontColor('#999999')
-          .width('100%')
-          .padding({ left: 24, right: 24, top: 16, bottom: 10 })
-
-        Grid() {
-          ForEach(this.appShortcuts.filter(a => a.enabled), (app: AppShortcut) => {
-            GridItem() {
-              Column() {
-                Column() {
-                  Text(app.appName.charAt(0))
-                    .fontSize(this.fontSizeConfig.iconSize * 0.28)
-                    .fontColor('#FFFFFF')
-                }
-                .width(this.fontSizeConfig.iconSize * 0.55)
-                .height(this.fontSizeConfig.iconSize * 0.55)
-                .borderRadius(14)
-                .backgroundColor('#67C23A')
-                .justifyContent(FlexAlign.Center)
-
-                Text(app.appName)
-                  .fontSize(this.fontSizeConfig.fontSize - 4)
-                  .fontColor('#1A1A1A')
-                  .margin({ top: 8 })
-                  .maxLines(1)
-              }
-              .width('100%')
-              .onClick(() => this.onAppTap(app))
-            }
-          })
-        }
-        .columnsTemplate('1fr 1fr 1fr')
-        .columnsGap(12)
-        .rowsGap(16)
-        .width('100%')
-        .padding({ left: 24, right: 24 })
-      }
-    }
-  }
-
   @Builder
-  ContactActionDialog() {
+  ContactActionDialog(params: ContactActionDialogParams) {
     Column() {
       // 遮罩层
       Column()
@@ -319,27 +281,26 @@ export struct Index {
         .height('100%')
         .backgroundColor('rgba(0, 0, 0, 0.45)')
         .onClick(() => {
-          this.showContactDialog = false;
-          this.selectedContact = null;
+          params.showContactDialog = false;
+          params.selectedContact = null;
         })
 
       // 弹窗内容
       Column() {
         // 头部
         Row() {
-          Text(this.selectedContact?.name ?? '')
+          Text(params.selectedContact?.name ?? '')
             .fontSize(20)
             .fontWeight(FontWeight.Medium)
             .fontColor('#1A1A1A')
 
           Blank()
-
           Text('x')
             .fontSize(22)
             .fontColor('#C0C4CC')
             .onClick(() => {
-              this.showContactDialog = false;
-              this.selectedContact = null;
+              params.showContactDialog = false;
+              params.selectedContact = null;
             })
         }
         .width('100%')
@@ -348,8 +309,8 @@ export struct Index {
         Divider().color('#EBEEF5').margin({ left: 24, right: 24 })
 
         // 头像
-        if (this.selectedContact?.photoUri) {
-          Image(this.selectedContact.photoUri)
+        if (params.selectedContact?.photoUri) {
+          Image(params.selectedContact.photoUri)
             .width(72)
             .height(72)
             .borderRadius(36)
@@ -357,7 +318,7 @@ export struct Index {
             .margin({ top: 16 })
         } else {
           Column() {
-            Text(this.selectedContact?.name?.charAt(0) ?? '')
+            Text(params.selectedContact?.name?.charAt(0) ?? '')
               .fontSize(28)
               .fontWeight(FontWeight.Bold)
               .fontColor('#FFFFFF')
@@ -370,7 +331,7 @@ export struct Index {
           .margin({ top: 16 })
         }
 
-        Text(this.selectedContact?.phone ?? '')
+        Text(params.selectedContact?.phone ?? '')
           .fontSize(14)
           .fontColor('#909399')
           .margin({ top: 8 })
@@ -413,9 +374,8 @@ export struct Index {
     .height('100%')
     .position({ x: 0, y: 0 } as Position)
   }
-
   @Builder
-  ExitConfirmDialog() {
+  ExitConfirmDialog(params: ExitConfirmDialogParams) {
     Column() {
       // 遮罩
       Column()
